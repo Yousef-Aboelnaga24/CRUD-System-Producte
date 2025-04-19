@@ -8,20 +8,23 @@ let price = document.getElementById('price');
 let taxes = document.getElementById('taxes');
 let ads = document.getElementById('ads');
 let discount = document.getElementById('discount');
-
+// ---------------------------------------------------
 let mode = 'Create';
 let globalI;
 function calculateTotal() {
-
-    if (price.value != '' || taxes.value != '' || ads.value != '' || discount.value != '') {
-        let result = (+price.value + +taxes.value + +ads.value) - +discount.value;
+    let result;
+    if (price.value != '') {
+        result = (+price.value + +taxes.value + +ads.value) - +discount.value;
         total.innerHTML = result;
         total.style.background = '#040'
+
+        if (result < 0) {
+            total.style.background = '#a00d02'
+        }
     } else {
         total.innerHTML = 0;
         total.style.background = '#a00d02'
     }
-
 }
 
 let data;
@@ -32,7 +35,7 @@ if (localStorage.crud != null) {
 }
 
 button.addEventListener('click', () => {
-    let obeject = {
+    let object = {
         title: title.value.toLowerCase(),
         price: price.value,
         taxes: taxes.value,
@@ -42,28 +45,29 @@ button.addEventListener('click', () => {
         count: count.value,
         category: category.value.toLowerCase()
     };
+    if (title.value != '' && price.value != '' && category.value != '' && total.innerHTML >= 0 && +object.count <= 100) {
+        if (mode === 'create') {
 
-    if (mode === 'create') {
+            if (+object.count > 1 && +object.count != 0) {
+                for (let i = 0; i < +object.count; i++) {
+                    data.push(object);
+                }
 
-        if (obeject.count > 1) {
-            for (let i = 0; i < obeject.count; i++) {
-                data.push(obeject);
+            } else {
+                data.push(object);
             }
-
+            mode = 'create'
         } else {
-            data.push(obeject);
+            data[globalI] = object;
+            button.innerHTML = 'Create';
+            mode = 'create';
+            count.style.display = 'block';
+
         }
-    } else {
-        data[globalI] = obeject;
-        button.innerHTML = 'Create';
-        mode = 'create';
-        count.style.display = 'block';
-
     }
-
-    localStorage.setItem('crud', JSON.stringify(data));
-    clearData()
     showData()
+    clearData()
+    localStorage.setItem('crud', JSON.stringify(data));
 })
 
 function clearData() {
@@ -82,20 +86,19 @@ function showData() {
     let table = '';
     for (let i = 0; i < data.length; i++) {
         table += `
-       <tr>
-            <td>${i}</td>
-            <td>${data[i].title}</td>
-            <td>${data[i].price}</td>
-            <td>${data[i].taxes}</td>
-            <td>${data[i].ads}</td>
-            <td>${data[i].discount}</td>
-            <td>${data[i].total}</td>
-            <td>${data[i].category}</td>
-            <td><button onclick="updateData(${i})" id="update">Update</button></td>
-            <td><button onclick="deleteData(${i})" id="del">Delete</button></td>
-            </tr>
-            `
-
+        <tr>
+        <td>${i + 1}</td>
+        <td>${data[i].title}</td>
+        <td>${data[i].price}</td>
+        <td>${data[i].taxes}</td>
+        <td>${data[i].ads}</td>
+        <td>${data[i].discount}</td>
+        <td>${data[i].total}</td>
+        <td>${data[i].category}</td>
+        <td><button onclick="updateData(${i})" id="update">Update</button></td>
+        <td><button onclick="deleteData(${i})" id="del">Delete</button></td>
+        </tr>
+        `
     }
     document.getElementById('tablebody').innerHTML = table
     let buttonDel = document.getElementById('deleteAll')
@@ -120,7 +123,6 @@ function deleteAll() {
 }
 
 function updateData(i) {
-
     title.value = data[i].title
     price.value = data[i].price
     taxes.value = data[i].taxes
@@ -129,7 +131,7 @@ function updateData(i) {
     count.style.display = 'none';
     category.value = data[i].category
     calculateTotal()
-    // showData();
+    showData();
     mode = 'update';
     button.innerHTML = 'Update';
     globalI = i;
@@ -162,7 +164,7 @@ function searchData(value) {
             if (data[i].title.includes(value)) {
                 table += `
                 <tr>
-                     <td>${i}</td>
+                     <td>${i + 1}</td>
                      <td>${data[i].title}</td>
                      <td>${data[i].price}</td>
                      <td>${data[i].taxes}</td>
@@ -182,7 +184,7 @@ function searchData(value) {
             if (data[i].category.includes(value)) {
                 table += `
                 <tr>
-                     <td>${i}</td>
+                     <td>${i + 1}</td>
                      <td>${data[i].title}</td>
                      <td>${data[i].price}</td>
                      <td>${data[i].taxes}</td>
